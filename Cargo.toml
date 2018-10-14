@@ -1,0 +1,6 @@
+[package]
+name = "naive-wiki-api"
+version = "0.1.0"
+authors = ["Tom Milligan <tommilligan@users.noreply.github.com>"]
+
+[dependencies]
