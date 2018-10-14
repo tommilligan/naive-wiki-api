@@ -12,7 +12,7 @@ const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 pub fn start(address: &str) -> iron::Listening {
     let (logger_before, logger_after) = logger::Logger::new(None);
     let mut router = Router::new();
-    // routest go here
+    router.get("/health", super::health, "HEALTH");
 
     let mut chain = Chain::new(router);
     chain.link_before(persistent::Read::<bodyparser::MaxBodyLength>::one(
