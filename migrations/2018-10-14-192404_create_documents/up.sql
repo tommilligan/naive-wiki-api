@@ -1,0 +1,5 @@
+CREATE TABLE documents (
+  id SERIAL PRIMARY KEY,
+  title TEXT UNIQUE NOT NULL
+)
+  
