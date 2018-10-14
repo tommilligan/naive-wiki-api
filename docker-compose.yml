@@ -10,3 +10,10 @@ services:
       - POSTGRES_DB
       - POSTGRES_PASSWORD
       - POSTGRES_USER
+
+  db-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    environment:
+      - DATABASE_URL
