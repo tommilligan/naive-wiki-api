@@ -2,8 +2,11 @@ extern crate iron;
 extern crate naive_wiki;
 extern crate reqwest;
 
+use std::collections::HashMap;
+
 use iron::Listening;
 use naive_wiki::api::server::start;
+use naive_wiki::api::RefRevision;
 use reqwest::{Client, StatusCode};
 
 struct TestSystem {
@@ -13,8 +16,8 @@ struct TestSystem {
 }
 
 impl TestSystem {
-    fn start() -> TestSystem {
-        let address = "localhost:8089".to_string();
+    fn start(port: usize) -> TestSystem {
+        let address = format!("localhost:{}", port).to_string();
         TestSystem {
             client: Client::new(),
             server: start(&address),
@@ -22,7 +25,7 @@ impl TestSystem {
         }
     }
 
-    fn path(self, path: &str) -> String {
+    fn path(&self, path: &str) -> String {
         format!("http://{}{}", &self.address, path)
     }
 }
@@ -34,8 +37,44 @@ impl Drop for TestSystem {
 }
 
 #[test]
-fn documents() {
-    let system = TestSystem::start();
+fn health() {
+    let system = TestSystem::start(8081);
     let response = reqwest::get(&system.path("/health")).unwrap();
     assert_eq!(response.status(), StatusCode::OK);
+}
+
+#[test]
+fn document_put_bad_request() {
+    let system = TestSystem::start(8082);
+
+    // POST version
+    let mut map = HashMap::new();
+    map.insert("malformed_key", "malformed_value");
+    let response = &system
+        .client
+        .post(&system.path("/documents/malformed_document"))
+        .json(&map)
+        .send()
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[test]
+fn document_put_and_get() {
+    let system = TestSystem::start(8083);
+
+    // POST version
+    let mut map = HashMap::new();
+    map.insert("content", "test_document contents");
+    let mut response = system
+        .client
+        .post(&system.path("/documents/test_document"))
+        .json(&map)
+        .send()
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::CREATED);
+
+    // GET content back
+    let revision: RefRevision = response.json().unwrap();
+    let check = reqwest::get(&system.path(&revision.url)).unwrap();
 }

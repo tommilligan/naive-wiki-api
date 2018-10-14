@@ -13,6 +13,18 @@ pub fn start(address: &str) -> iron::Listening {
     let (logger_before, logger_after) = logger::Logger::new(None);
     let mut router = Router::new();
     router.get("/health", super::health, "HEALTH");
+    router.get("/documents", super::list_documents, "LIST_DOCUMENTS");
+    router.get("/documents/:title", super::list_revisions, "LIST_REVISIONS");
+    router.get(
+        "/documents/:title/:revision",
+        super::get_revision,
+        "GET_REVISION",
+    );
+    router.post(
+        "/documents/:title",
+        super::create_revision,
+        "CREATE_REVISION",
+    );
 
     let mut chain = Chain::new(router);
     chain.link_before(persistent::Read::<bodyparser::MaxBodyLength>::one(
