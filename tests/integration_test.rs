@@ -1,9 +1,11 @@
+extern crate chrono;
 extern crate iron;
 extern crate naive_wiki;
 extern crate reqwest;
 
 use std::collections::HashMap;
 
+use chrono::offset::Utc;
 use iron::Listening;
 use naive_wiki::api::server::start;
 use naive_wiki::api::RefRevision;
@@ -77,4 +79,26 @@ fn document_put_and_get() {
     // GET content back
     let revision: RefRevision = response.json().unwrap();
     let check = reqwest::get(&system.path(&revision.url)).unwrap();
+}
+
+#[test]
+fn document_put_and_get_le() {
+    let system = TestSystem::start(8084);
+
+    // POST version
+    let mut map = HashMap::new();
+    map.insert("content", "test_document contents");
+    let mut response = system
+        .client
+        .post(&system.path("/documents/test_document_le"))
+        .json(&map)
+        .send()
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::CREATED);
+
+    // GET content back
+    let revision: RefRevision = response.json().unwrap();
+    let now = Utc::now().naive_utc();
+    let check =
+        reqwest::get(&system.path(&format!("/documents/test_docment_le/{}", &now))).unwrap();
 }
