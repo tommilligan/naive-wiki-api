@@ -47,7 +47,8 @@ pub fn get_revision(
 ) -> QueryResult<models::Revision> {
     match revision_timestamp {
         Some(ts) => models::Revision::belonging_to(document)
-            .filter(schema::revisions::dsl::created.eq(ts))
+            .filter(schema::revisions::dsl::created.le(ts))
+            .order_by(schema::revisions::dsl::created.desc())
             .first(conn),
         None => models::Revision::belonging_to(document)
             .order_by(schema::revisions::dsl::created.desc())

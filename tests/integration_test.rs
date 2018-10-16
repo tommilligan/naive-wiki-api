@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use chrono::offset::Utc;
 use iron::Listening;
 use naive_wiki::api::server::start;
-use naive_wiki::api::RefRevision;
+use naive_wiki::api::{format_ts, RefRevision};
 use reqwest::{Client, StatusCode};
 
 struct TestSystem {
@@ -84,13 +84,14 @@ fn document_put_and_get() {
 #[test]
 fn document_put_and_get_le() {
     let system = TestSystem::start(8084);
+    let document_name = "test_document_le";
 
     // POST version
     let mut map = HashMap::new();
     map.insert("content", "test_document contents");
     let mut response = system
         .client
-        .post(&system.path("/documents/test_document_le"))
+        .post(&system.path(&format!("/documents/{}", &document_name)))
         .json(&map)
         .send()
         .unwrap();
@@ -99,6 +100,12 @@ fn document_put_and_get_le() {
     // GET content back
     let revision: RefRevision = response.json().unwrap();
     let now = Utc::now().naive_utc();
-    let check =
-        reqwest::get(&system.path(&format!("/documents/test_docment_le/{}", &now))).unwrap();
+    let url = system.path(&format!(
+        "/documents/{}/{}",
+        &document_name,
+        &format_ts(&now)
+    ));
+    println!("{}", &url);
+    let check = reqwest::get(&url).unwrap();
+    assert_eq!(check.status(), StatusCode::OK);
 }

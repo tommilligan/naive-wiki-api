@@ -14,6 +14,10 @@ use super::models;
 
 const TIMESTAMP_FORMAT: &str = "%Y%m%dT%H%M%S%f";
 
+pub fn format_ts(ts: &NaiveDateTime) -> String {
+    ts.format(TIMESTAMP_FORMAT).to_string()
+}
+
 // API request/response handlers
 
 pub fn health(_req: &mut Request) -> IronResult<Response> {
@@ -63,7 +67,7 @@ pub struct RefRevision {
 
 impl RefRevision {
     pub fn new(doc: &models::Document, rev: &models::Revision) -> RefRevision {
-        let ts = &rev.created.format(TIMESTAMP_FORMAT);
+        let ts = format_ts(&rev.created);
         RefRevision {
             url: format!("/documents/{}/{}", &doc.title, &ts),
             timestamp: ts.to_string(),

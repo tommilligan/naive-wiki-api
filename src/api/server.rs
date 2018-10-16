@@ -15,15 +15,15 @@ pub fn start(address: &str) -> iron::Listening {
     router.get("/health", super::health, "HEALTH");
     router.get("/documents", super::list_documents, "LIST_DOCUMENTS");
     router.get("/documents/:title", super::list_revisions, "LIST_REVISIONS");
-    router.get(
-        "/documents/:title/:revision",
-        super::get_revision,
-        "GET_REVISION",
-    );
     router.post(
         "/documents/:title",
         super::create_revision,
         "CREATE_REVISION",
+    );
+    router.get(
+        "/documents/:title/:revision",
+        super::get_revision,
+        "GET_REVISION",
     );
 
     let mut chain = Chain::new(router);
